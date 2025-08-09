@@ -15,9 +15,7 @@ import { Textarea } from '../ui/textarea';
 
 const EditVariantModal = ({ open, onClose, variant }) => {
   const [formData, setFormData] = useState({
-    size: '',
-    price: '',
-    stock: '',
+    size_options: [{ size: '', stock: '', price: '' }],
     is_best_selling: false,
     name: '',
     description: '',
@@ -33,16 +31,13 @@ const EditVariantModal = ({ open, onClose, variant }) => {
   useEffect(() => {
     if (variant) {
       setFormData({
-        size: variant.size || '',
-        price: variant.price || '',
-        stock: variant.stock || '',
+        size_options: variant.size_options || [{ size: '', stock: '', price: '' }],
         is_best_selling: variant.is_best_selling || false,
         name: variant.name || '',
         description: variant.description || '',
         images: [],
       });
 
-      // Set existing image URLs
       setExistingImages(Array.isArray(variant.images) ? variant.images : []);
       setImagePreviews([]);
     }
@@ -67,6 +62,25 @@ const EditVariantModal = ({ open, onClose, variant }) => {
     }
   };
 
+  const handleSizeOptionChange = (index, field, value) => {
+    const updatedSizes = [...formData.size_options];
+    updatedSizes[index][field] = value;
+    setFormData((prev) => ({ ...prev, size_options: updatedSizes }));
+  };
+
+  const addSizeOption = () => {
+    setFormData((prev) => ({
+      ...prev,
+      size_options: [...prev.size_options, { size: '', stock: '', price: '' }],
+    }));
+  };
+
+  const removeSizeOption = (index) => {
+    const updated = [...formData.size_options];
+    updated.splice(index, 1);
+    setFormData((prev) => ({ ...prev, size_options: updated }));
+  };
+
   const removeNewImage = (index) => {
     const updatedImages = [...formData.images];
     const updatedPreviews = [...imagePreviews];
@@ -83,13 +97,11 @@ const EditVariantModal = ({ open, onClose, variant }) => {
     setExistingImages(updated);
   };
 
-  const handleSubmit = async  (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const data = new FormData();
 
-    data.append('price', formData.price || '');
-    data.append('stock', formData.stock || '');
-    data.append('size', formData.size || '');
+    data.append('size_options', JSON.stringify(formData.size_options));
     data.append('is_best_selling', formData.is_best_selling ? 'true' : 'false');
     data.append('name', formData.name || '');
     data.append('description', formData.description || '');
@@ -102,12 +114,12 @@ const EditVariantModal = ({ open, onClose, variant }) => {
     try {
       setIsSubmitting(true);
       await updateVariant({ id: variant.id, data });
-      onClose(); 
+      onClose();
     } catch (err) {
       toast.error('Failed to update variant.');
     } finally {
-    setIsSubmitting(false);
-  };
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -119,19 +131,38 @@ const EditVariantModal = ({ open, onClose, variant }) => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="size">Size</Label>
-              <Input id="size" name="size" value={formData.size} onChange={handleChange} required />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price">Price</Label>
-              <Input id="price" name="price" type="number" value={formData.price} onChange={handleChange} required />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="stock">Stock</Label>
-              <Input id="stock" name="stock" type="number" value={formData.stock} onChange={handleChange} required />
+            <div className="col-span-2 space-y-2">
+              <Label>Size Options</Label>
+              {formData.size_options.map((opt, index) => (
+                <div key={index} className="flex gap-2 items-center">
+                  <Input
+                    value={opt.size}
+                    onChange={(e) => handleSizeOptionChange(index, 'size', e.target.value)}
+                    placeholder="Size"
+                    required
+                  />
+                  <Input
+                    type="number"
+                    value={opt.stock}
+                    onChange={(e) => handleSizeOptionChange(index, 'stock', e.target.value)}
+                    placeholder="Stock"
+                    required
+                  />
+                  <Input
+                    type="number"
+                    value={opt.price}
+                    onChange={(e) => handleSizeOptionChange(index, 'price', e.target.value)}
+                    placeholder="Price"
+                    required
+                  />
+                  <Button type="button" onClick={() => removeSizeOption(index)} variant="destructive">
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" onClick={addSizeOption} variant="outline">
+                + Add Size Option
+              </Button>
             </div>
 
             <div className="space-y-2">
@@ -166,7 +197,6 @@ const EditVariantModal = ({ open, onClose, variant }) => {
                 onChange={handleChange}
               />
 
-              {/* Existing Images */}
               {existingImages.length > 0 && (
                 <div className="flex flex-wrap gap-3 mt-2">
                   {existingImages.map((img, index) => (
@@ -184,7 +214,6 @@ const EditVariantModal = ({ open, onClose, variant }) => {
                 </div>
               )}
 
-              {/* New Image Previews */}
               {imagePreviews.length > 0 && (
                 <div className="flex flex-wrap gap-3 mt-2">
                   {imagePreviews.map((src, idx) => (

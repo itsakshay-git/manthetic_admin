@@ -31,22 +31,17 @@ export default function ProductTable({ onViewVariants }) {
   
   const { mutate: deleteProduct, isPending: deleting } = useDeleteProduct();
   const { data: categories = [], isLoading: loadingCategories } = useGetAllCategories();
-  const { data: allProducts = [], isLoading: loadingProducts } = useGetAllProducts();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
   
-  const products =
-  categoryId && categoryId !== "all"
-  ? allProducts.filter((p) => String(p.category_id) === String(categoryId))
-  : allProducts;
+const {
+  data,
+  isLoading: loadingProducts,
+} = useGetAllProducts({ page: currentPage, limit: 10, category: categoryId });
 
-  const paginatedProducts = products.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-const totalPages = Math.ceil(products.length / itemsPerPage);
+const products = data?.products || [];
+const totalPages = data?.totalPages || 1;
 
   const handleDelete = async (id) => {
   try {
@@ -62,7 +57,10 @@ const totalPages = Math.ceil(products.length / itemsPerPage);
 return (
   <div>
       <div className="pb-4 flex justify-between items-center">
-        <Select value={categoryId} onValueChange={setCategoryId}>
+        <Select value={categoryId} onValueChange={(val) => {
+          setCategoryId(val);
+          setCurrentPage(1); // reset to first page on filter
+        }}>
           <SelectTrigger className="w-60">
             <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
@@ -91,7 +89,7 @@ return (
           </TableRow>
         </TableHeader>
         <TableBody>
-          {paginatedProducts.map((prod, i) => (
+          {products.map((prod, i) => (
             <TableRow
               key={prod.id}
               className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
@@ -152,29 +150,30 @@ return (
         </TableBody>
       </Table>
 
-      <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
-        <span className="text-sm text-gray-600">
-          Page {currentPage} of {totalPages}
-        </span>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </Button>
-        </div>
+    <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
+      <span className="text-sm text-gray-600">
+        Page {currentPage} of {totalPages}
+      </span>
+      <div className="space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          Next
+        </Button>
       </div>
+    </div>
+
 
       {editProduct && (
         <EditProductModal

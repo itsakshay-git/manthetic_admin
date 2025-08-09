@@ -28,13 +28,11 @@ const VariantForm = ({ productId, onFinish }) => {
   const form = useForm({
     resolver: zodResolver(singleVariantSchema),
     defaultValues: {
-    name: "",
-    description: "",
-    size: "",
-    price: "",
-    stock: "",
-    images: null,
-    is_best_selling: false,
+      name: "",
+      description: "",
+      size_options: [{ size: "", stock: "", price: "" }],
+      images: null,
+      is_best_selling: false,
     },
   });
 
@@ -42,41 +40,61 @@ const VariantForm = ({ productId, onFinish }) => {
     handleSubmit,
     reset,
     control,
+    setValue,
+    watch,
     formState: { isSubmitting },
   } = form;
 
-const onSubmit = async (data) => {
-  console.log(data)
-  try {
-    const formData = new FormData();
-    formData.append("product_id", productId);
-    formData.append("name", data.name || "");
-    formData.append("description", data.description || "");
-    formData.append("size", data.size || "");
-    formData.append("price", data.price || "");
-    formData.append("stock", data.stock || "");
-    formData.append("is_best_selling", data.is_best_selling ? "true" : "false");
+  const sizeOptions = watch("size_options");
 
-    if (data.images?.[0]) {
-      formData.append("images", data.images[0]);
-    }
+    const handleSizeChange = (index, field, value) => {
+      const updated = [...sizeOptions];
+      updated[index][field] = value;
+      setValue("size_options", updated);
+    };
 
-    const variant = await addVariant(formData);
+    const handleAddSize = () => {
+      setValue("size_options", [
+        ...sizeOptions,
+        { size: "", stock: "", price: "" },
+      ]);
+    };
 
-    toast.success("Variant added successfully!");
-    reset();
-    setImagePreview(null);
-    // onVariantCreated?.(variant?.id);
+    const handleRemoveSize = (index) => {
+      const updated = sizeOptions.filter((_, i) => i !== index);
+      setValue("size_options", updated);
+    };
+
+  
+
+  const onSubmit = async (data) => {
+     console.log("Form submitted:", data);
+    try {
+      const formData = new FormData();
+      formData.append("product_id", productId);
+      formData.append("name", data.name || "");
+      formData.append("description", data.description || "");
+      formData.append("size_options", JSON.stringify(data.size_options));
+      formData.append("is_best_selling", data.is_best_selling ? "true" : "false");
+
+      if (data.images?.[0]) {
+        formData.append("images", data.images[0]);
+      }
+
+      const variant = await addVariant(formData);
+
+      toast.success("Variant added successfully!");
+      reset();
+      setImagePreview(null);
       if (onFinish) {
         onFinish();
       }
-    navigate("/products");
-  } catch (error) {
-    console.error("Variant creation error:", error);
-    toast.error("Failed to add variant.");
-  }
-};
-
+      navigate("/products");
+    } catch (error) {
+      console.error("Variant creation error:", error);
+      toast.error("Failed to add variant.");
+    }
+  };
 
   return (
     <Form {...form}>
@@ -85,78 +103,73 @@ const onSubmit = async (data) => {
         className="grid gap-4 border rounded-xl p-6 shadow-md bg-white"
       >
         <FormField
-        control={control}
-        name="name"
-        render={({ field }) => (
-            <FormItem>
-            <FormLabel>Variant Name</FormLabel>
-            <FormControl>
-                <Input placeholder="Variant name (e.g. T-shirt Red L)" {...field} />
-            </FormControl>
-            <FormMessage />
-            </FormItem>
-        )}
-        />
-
-        <FormField
-        control={control}
-        name="description"
-        render={({ field }) => (
-            <FormItem>
-            <FormLabel>Variant Description</FormLabel>
-            <FormControl>
-                <Textarea
-                placeholder="Short variant description"
-                rows={3}
-                {...field}
-                />
-            </FormControl>
-            <FormMessage />
-            </FormItem>
-        )}
-        />
-        <FormField
           control={control}
-          name="size"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Size</FormLabel>
+              <FormLabel>Variant Name</FormLabel>
               <FormControl>
-                <Input placeholder="e.g. M, L, XL" {...field} />
+                <Input placeholder="Variant name (e.g. T-shirt Red L)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <div className="grid grid-cols-2 gap-4">
-          <FormField
-            control={control}
-            name="price"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Price (₹)</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="e.g. 999" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <FormField
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Variant Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Short variant description"
+                  rows={3}
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <FormField
-            control={control}
-            name="stock"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Stock</FormLabel>
-                <FormControl>
-                  <Input type="number" placeholder="e.g. 50" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <div className="space-y-2">
+        <FormLabel>Sizes (with Stock & Price)</FormLabel>
+        {sizeOptions.map((option, index) => (
+          <div
+            key={index}
+            className="grid grid-cols-4 gap-2 items-center mb-2"
+          >
+            <Input
+              value={option.size}
+              onChange={(e) => handleSizeChange(index, "size", e.target.value)}
+              placeholder="Size (e.g. M)"
+            />
+            <Input
+              type="number"
+              value={option.stock}
+              onChange={(e) => handleSizeChange(index, "stock", e.target.value)}
+              placeholder="Stock"
+            />
+            <Input
+              type="number"
+              value={option.price}
+              onChange={(e) => handleSizeChange(index, "price", e.target.value)}
+              placeholder="Price (₹)"
+            />
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={() => handleRemoveSize(index)}
+            >
+              Remove
+            </Button>
+          </div>
+        ))}
+        <Button type="button" variant="outline" onClick={handleAddSize}>
+          Add Size
+        </Button>
         </div>
 
         <FormField

@@ -3,14 +3,21 @@ import axios from "@/lib/axios";
 import { toast } from "react-hot-toast";
 
 
-export const useGetAllProducts = () =>
+export const useGetAllProducts = ({ page = 1, limit = 10, category = "" }) =>
   useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", page, limit, category],
     queryFn: async () => {
-      const { data } = await axios.get("/products/");
-      console.log(data)
-      return data;
+      const params = new URLSearchParams();
+      params.append("page", page);
+      params.append("limit", limit);
+      if (category && category !== "all") {
+        params.append("category", category);
+      }
+
+      const { data } = await axios.get(`/products/?${params.toString()}`);
+      return data; // includes: products, totalPages, totalCount, page
     },
+    keepPreviousData: true, // keeps previous page while loading new
   });
 
 
