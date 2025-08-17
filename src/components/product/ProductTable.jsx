@@ -23,6 +23,7 @@ import { useDeleteProduct } from "@/hooks/product/useProduct";
 import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function ProductTable({ onViewVariants }) {
   const [categoryId, setCategoryId] = useState("");
@@ -33,6 +34,8 @@ export default function ProductTable({ onViewVariants }) {
   const { data: categories = [], isLoading: loadingCategories } = useGetAllCategories();
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+
+  const navigate = useNavigate()
 
   
 const {
@@ -85,6 +88,7 @@ return (
             <TableHead className="text-left">Category</TableHead>
             <TableHead className="text-center">Status</TableHead>
             <TableHead className="text-center">Variants</TableHead>
+            <TableHead className="text-center">Add Variant</TableHead>
             <TableHead className="text-center">Actions</TableHead>
           </TableRow>
         </TableHeader>
@@ -124,6 +128,15 @@ return (
               <TableCell className="text-center align-middle">
                 <Button variant="link" onClick={() => onViewVariants(prod.id)}>
                   View
+                </Button>
+              </TableCell>
+              <TableCell className="text-center align-middle">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate(`/add-variant/${prod.id}`)}
+                >
+                  Add
                 </Button>
               </TableCell>
               <TableCell className="text-center align-middle">

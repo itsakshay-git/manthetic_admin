@@ -30,7 +30,8 @@ export const useVariant = () => {
 
   
     const getVariantsByProduct = useCallback(async (productId) => {
-        const response = await axios.get(`/products/${productId}`);
+        const response = await axios.get(`/products/product/${productId}`);
+        console.log(response.data.variants)
         return response.data.variants;
     }, []);
 

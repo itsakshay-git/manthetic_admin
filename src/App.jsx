@@ -4,6 +4,7 @@ import ProtectedRoute from "@/routes/ProtectedRoute";
 import AdminLayout from "@/layout/AdminLayout";
 import Loader from "@/components/shared/Loader";
 import { Toaster } from "sonner";
+import AddVariantPage from "./components/product/AddVariantPage";
 
 
 const DashboardPage = lazy(() => import("@/pages/dashboard/DashboardPage"));
@@ -33,6 +34,7 @@ function App() {
               <Route path="orders" element={<OrdersPage />} />
               <Route path="customers" element={<CustomersPage />} />
               <Route path="reviews" element={<ReviewsPage />} />
+              <Route path="/add-variant/:productId" element={<AddVariantPage />} />
             </Route>
           </Route>
           
