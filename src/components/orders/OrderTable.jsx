@@ -49,69 +49,70 @@ export default function OrderTable({ orders = [], onUpdate }) {
 
   return (
     <div className="border rounded-2xl shadow-sm overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="p-4">Order ID</TableHead>
-            <TableHead className="p-4">Customer</TableHead>
-            <TableHead className="p-4">Items</TableHead>
-            <TableHead className="p-4">Status</TableHead>
-            <TableHead className="p-4">Payment</TableHead>
-            <TableHead className="p-4 text-center">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedOrders.map((order, i) => (
-            <TableRow
-              key={order.id}
-              className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
-            >
-              <TableCell className="p-4 font-mono text-xs text-gray-700">
-                #{order.id}
-              </TableCell>
-              <TableCell className="p-4 text-gray-800">
-                {order.customer_name}
-              </TableCell>
-              <TableCell className="p-4">
-                <div className="space-y-1 text-muted-foreground text-xs">
+      {/* Mobile View - Card Layout */}
+      <div className="block sm:hidden">
+        {paginatedOrders.map((order, i) => (
+          <div
+            key={order.id}
+            className={`p-4 border-b last:border-b-0 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+              }`}
+          >
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 font-medium text-sm">
+                      #{order.id}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900">{order.customer_name}</h3>
+                    <p className="text-xs text-gray-500">Order #{order.id}</p>
+                  </div>
+                </div>
+                <div className="text-right space-y-1">
+                  <Badge
+                    className={
+                      order.status === 'DELIVERED'
+                        ? 'bg-green-100 text-green-800 text-xs'
+                        : order.status === 'CANCELLED'
+                          ? 'bg-red-100 text-red-800 text-xs'
+                          : order.status === 'SHIPPED'
+                            ? 'bg-blue-100 text-blue-800 text-xs'
+                            : order.status === 'CONFIRMED'
+                              ? 'bg-yellow-100 text-yellow-800 text-xs'
+                              : 'bg-gray-100 text-gray-800 text-xs'
+                    }
+                  >
+                    {order.status}
+                  </Badge>
+                  <Badge
+                    className={
+                      order.payment_status === 'PAID'
+                        ? 'bg-emerald-100 text-emerald-800 text-xs'
+                        : order.payment_status === 'FAILED'
+                          ? 'bg-rose-100 text-rose-800 text-xs'
+                          : 'bg-gray-100 text-gray-800 text-xs'
+                    }
+                  >
+                    {order.payment_status}
+                  </Badge>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-gray-700">Items:</h4>
+                <div className="space-y-1 text-xs text-gray-600 bg-gray-50 p-2 rounded">
                   {order.items.map((item) => (
-                    <div key={item.id}>
-                      {item.product_name} × {item.quantity} – ₹{item.price}
+                    <div key={item.id} className="flex justify-between">
+                      <span>{item.product_name} × {item.quantity}</span>
+                      <span>₹{item.price}</span>
                     </div>
                   ))}
                 </div>
-              </TableCell>
-              <TableCell className="p-4">
-                <Badge
-                  className={
-                    order.status === 'DELIVERED'
-                      ? 'bg-green-100 text-green-800'
-                      : order.status === 'CANCELLED'
-                      ? 'bg-red-100 text-red-800'
-                      : order.status === 'SHIPPED'
-                      ? 'bg-blue-100 text-blue-800'
-                      : order.status === 'CONFIRMED'
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }
-                >
-                  {order.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="p-4">
-                <Badge
-                  className={
-                    order.payment_status === 'PAID'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : order.payment_status === 'FAILED'
-                      ? 'bg-rose-100 text-rose-800'
-                      : 'bg-gray-100 text-gray-800'
-                  }
-                >
-                  {order.payment_status}
-                </Badge>
-              </TableCell>
-              <TableCell className="p-4 text-center">
+              </div>
+
+              <div className="flex justify-end">
                 <Dialog
                   open={openDialogId === order.id}
                   onOpenChange={(open) =>
@@ -119,11 +120,11 @@ export default function OrderTable({ orders = [], onUpdate }) {
                   }
                 >
                   <DialogTrigger asChild>
-                    <Button size="sm" variant="outline">
-                      Update
+                    <Button size="sm" variant="outline" className="text-xs px-2 py-1 h-auto">
+                      Update Status
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-md">
+                  <DialogContent className="max-w-md w-[95vw]">
                     <DialogHeader>
                       <DialogTitle>Update Order #{order.id}</DialogTitle>
                     </DialogHeader>
@@ -135,17 +136,112 @@ export default function OrderTable({ orders = [], onUpdate }) {
                     />
                   </DialogContent>
                 </Dialog>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-      <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
+      {/* Desktop View - Table Layout */}
+      <div className="hidden sm:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="p-4">Order ID</TableHead>
+              <TableHead className="p-4">Customer</TableHead>
+              <TableHead className="p-4">Items</TableHead>
+              <TableHead className="p-4">Status</TableHead>
+              <TableHead className="p-4">Payment</TableHead>
+              <TableHead className="p-4 text-center">Action</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedOrders.map((order, i) => (
+              <TableRow
+                key={order.id}
+                className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}
+              >
+                <TableCell className="p-4 font-mono text-xs text-gray-700">
+                  #{order.id}
+                </TableCell>
+                <TableCell className="p-4 text-gray-800">
+                  {order.customer_name}
+                </TableCell>
+                <TableCell className="p-4">
+                  <div className="space-y-1 text-muted-foreground text-xs">
+                    {order.items.map((item) => (
+                      <div key={item.id}>
+                        {item.product_name} × {item.quantity} – ₹{item.price}
+                      </div>
+                    ))}
+                  </div>
+                </TableCell>
+                <TableCell className="p-4">
+                  <Badge
+                    className={
+                      order.status === 'DELIVERED'
+                        ? 'bg-green-100 text-green-800'
+                        : order.status === 'CANCELLED'
+                          ? 'bg-red-100 text-red-800'
+                          : order.status === 'SHIPPED'
+                            ? 'bg-blue-100 text-blue-800'
+                            : order.status === 'CONFIRMED'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                    }
+                  >
+                    {order.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="p-4">
+                  <Badge
+                    className={
+                      order.payment_status === 'PAID'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : order.payment_status === 'FAILED'
+                          ? 'bg-rose-100 text-rose-800'
+                          : 'bg-gray-100 text-gray-800'
+                    }
+                  >
+                    {order.payment_status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="p-4 text-center">
+                  <Dialog
+                    open={openDialogId === order.id}
+                    onOpenChange={(open) =>
+                      setOpenDialogId(open ? order.id : null)
+                    }
+                  >
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline">
+                        Update
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Update Order #{order.id}</DialogTitle>
+                      </DialogHeader>
+                      <UpdateStatusModal
+                        onSubmit={handleUpdate(order.id)}
+                        isLoading={isUpdating}
+                        defaultStatus={order.status}
+                        defaultPaymentStatus={order.payment_status}
+                      />
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-3 border-t bg-gray-50 space-y-3 sm:space-y-0">
         <span className="text-sm text-gray-600">
           Page {currentPage} of {totalPages}
         </span>
-        <div className="space-x-2">
+        <div className="flex space-x-2">
           <Button
             variant="outline"
             size="sm"

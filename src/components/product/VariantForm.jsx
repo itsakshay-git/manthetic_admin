@@ -47,28 +47,28 @@ const VariantForm = ({ productId, onFinish }) => {
 
   const sizeOptions = watch("size_options");
 
-    const handleSizeChange = (index, field, value) => {
-      const updated = [...sizeOptions];
-      updated[index][field] = value;
-      setValue("size_options", updated);
-    };
+  const handleSizeChange = (index, field, value) => {
+    const updated = [...sizeOptions];
+    updated[index][field] = value;
+    setValue("size_options", updated);
+  };
 
-    const handleAddSize = () => {
-      setValue("size_options", [
-        ...sizeOptions,
-        { size: "", stock: "", price: "" },
-      ]);
-    };
+  const handleAddSize = () => {
+    setValue("size_options", [
+      ...sizeOptions,
+      { size: "", stock: "", price: "" },
+    ]);
+  };
 
-    const handleRemoveSize = (index) => {
-      const updated = sizeOptions.filter((_, i) => i !== index);
-      setValue("size_options", updated);
-    };
+  const handleRemoveSize = (index) => {
+    const updated = sizeOptions.filter((_, i) => i !== index);
+    setValue("size_options", updated);
+  };
 
-  
+
 
   const onSubmit = async (data) => {
-     console.log("Form submitted:", data);
+    console.log("Form submitted:", data);
     try {
       const formData = new FormData();
       formData.append("product_id", productId);
@@ -100,16 +100,20 @@ const VariantForm = ({ productId, onFinish }) => {
     <Form {...form}>
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="grid gap-4 border rounded-xl p-6 shadow-md bg-white"
+        className="grid gap-4 lg:gap-6 border rounded-xl p-4 lg:p-6 shadow-md bg-white"
       >
         <FormField
           control={control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Variant Name</FormLabel>
+              <FormLabel className="text-sm lg:text-base">Variant Name</FormLabel>
               <FormControl>
-                <Input placeholder="Variant name (e.g. T-shirt Red L)" {...field} />
+                <Input
+                  placeholder="Variant name (e.g. T-shirt Red L)"
+                  {...field}
+                  className="text-sm lg:text-base"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -121,12 +125,13 @@ const VariantForm = ({ productId, onFinish }) => {
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Variant Description</FormLabel>
+              <FormLabel className="text-sm lg:text-base">Variant Description</FormLabel>
               <FormControl>
                 <Textarea
                   placeholder="Short variant description"
                   rows={3}
                   {...field}
+                  className="text-sm lg:text-base"
                 />
               </FormControl>
               <FormMessage />
@@ -134,42 +139,51 @@ const VariantForm = ({ productId, onFinish }) => {
           )}
         />
 
-        <div className="space-y-2">
-        <FormLabel>Sizes (with Stock & Price)</FormLabel>
-        {sizeOptions.map((option, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-4 gap-2 items-center mb-2"
-          >
-            <Input
-              value={option.size}
-              onChange={(e) => handleSizeChange(index, "size", e.target.value)}
-              placeholder="Size (e.g. M)"
-            />
-            <Input
-              type="number"
-              value={option.stock}
-              onChange={(e) => handleSizeChange(index, "stock", e.target.value)}
-              placeholder="Stock"
-            />
-            <Input
-              type="number"
-              value={option.price}
-              onChange={(e) => handleSizeChange(index, "price", e.target.value)}
-              placeholder="Price (₹)"
-            />
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={() => handleRemoveSize(index)}
+        <div className="space-y-3 lg:space-y-4">
+          <FormLabel className="text-sm lg:text-base">Sizes (with Stock & Price)</FormLabel>
+          {sizeOptions.map((option, index) => (
+            <div
+              key={index}
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 lg:gap-3 items-center mb-3 lg:mb-2"
             >
-              Remove
-            </Button>
-          </div>
-        ))}
-        <Button type="button" variant="outline" onClick={handleAddSize}>
-          Add Size
-        </Button>
+              <Input
+                value={option.size}
+                onChange={(e) => handleSizeChange(index, "size", e.target.value)}
+                placeholder="Size (e.g. M)"
+                className="text-sm lg:text-base"
+              />
+              <Input
+                type="number"
+                value={option.stock}
+                onChange={(e) => handleSizeChange(index, "stock", e.target.value)}
+                placeholder="Stock"
+                className="text-sm lg:text-base"
+              />
+              <Input
+                type="number"
+                value={option.price}
+                onChange={(e) => handleSizeChange(index, "price", e.target.value)}
+                placeholder="Price (₹)"
+                className="text-sm lg:text-base"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => handleRemoveSize(index)}
+                className="text-xs lg:text-sm px-2 lg:px-3 py-1 lg:py-2 h-8 lg:h-9"
+              >
+                Remove
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddSize}
+            className="w-full sm:w-auto text-sm lg:text-base"
+          >
+            Add Size
+          </Button>
         </div>
 
         <FormField
@@ -177,7 +191,7 @@ const VariantForm = ({ productId, onFinish }) => {
           name="images"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Variant Image</FormLabel>
+              <FormLabel className="text-sm lg:text-base">Variant Image</FormLabel>
               <FormControl>
                 <div>
                   <Input
@@ -190,9 +204,10 @@ const VariantForm = ({ productId, onFinish }) => {
                         field.onChange(e.target.files);
                       }
                     }}
+                    className="text-sm lg:text-base"
                   />
                   {imagePreview && (
-                    <div className="mt-2 relative w-32 h-32">
+                    <div className="mt-3 lg:mt-2 relative w-24 h-24 lg:w-32 lg:h-32 mx-auto lg:mx-0">
                       <img
                         src={imagePreview}
                         alt="Preview"
@@ -217,7 +232,11 @@ const VariantForm = ({ productId, onFinish }) => {
           )}
         />
 
-        <Button type="submit" disabled={isSubmitting}>
+        <Button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full lg:w-auto text-sm lg:text-base"
+        >
           {isSubmitting ? "Adding..." : "Add Variant"}
         </Button>
       </form>

@@ -97,7 +97,7 @@ export default function VariantTable({ preselectedProductId }) {
       <div className="pb-4 space-y-4">
         {/* Search and Filter Row */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 w-full sm:max-w-md">
             <SearchInput
               placeholder="Search variants by name or product..."
               value={searchQuery}
@@ -105,7 +105,7 @@ export default function VariantTable({ preselectedProductId }) {
             />
           </div>
           <Select value={productId} onValueChange={handleProductChange}>
-            <SelectTrigger className="w-60">
+            <SelectTrigger className="w-full sm:w-60">
               <SelectValue placeholder="Filter by product" />
             </SelectTrigger>
             <SelectContent>
@@ -144,115 +144,191 @@ export default function VariantTable({ preselectedProductId }) {
           </div>
         ) : (
           <>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Image</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Best Selling</TableHead>
-                  <TableHead>Sizes</TableHead>
-                  <TableHead className="text-center">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedVariants.map((v, i) => {
-                  const productTitle =
-                    products.find((p) => p.id === v.productId)?.title || "-";
-                  const isExpanded = expandedId === v.id;
+            {/* Mobile View - Card Layout */}
+            <div className="block sm:hidden">
+              {paginatedVariants.map((v, i) => {
+                const productTitle =
+                  products.find((p) => p.id === v.product_id)?.title || "-";
 
-                  return (
-                    <>
-                      <TableRow key={v.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                        <TableCell>
-                          <img
-                            src={v.images?.[0]}
-                            alt="Variant"
-                            className="h-12 w-12 rounded border object-cover"
-                          />
-                        </TableCell>
-                        <TableCell>{v.name}</TableCell>
-                        <TableCell>{productTitle}</TableCell>
-                        <TableCell>
-                          {v.isBestSelling ? (
-                            <Badge className="bg-green-100 text-green-800">Yes</Badge>
+                return (
+                  <div
+                    key={v.id}
+                    className={`p-4 border-b last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                      }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <img
+                        src={v.images?.[0]}
+                        alt="Variant"
+                        className="h-16 w-16 rounded border object-cover flex-shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-gray-900 truncate">{v.name}</h3>
+                        <p className="text-sm text-gray-500 mt-1">{productTitle}</p>
+                        <div className="flex items-center space-x-2 mt-2">
+                          {v.is_best_selling ? (
+                            <Badge className="bg-green-100 text-green-800 text-xs">Best Seller</Badge>
                           ) : (
-                            <Badge variant="secondary">No</Badge>
+                            <Badge variant="secondary" className="text-xs">Regular</Badge>
                           )}
-                        </TableCell>
-                        <TableCell>
+                        </div>
+                        <div className="flex items-center space-x-2 mt-3">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-sm px-0 flex items-center gap-1"
-                            onClick={() => setExpandedId(isExpanded ? null : v.id)}
+                            className="text-xs p-0 h-auto"
+                            onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}
                           >
-                            {isExpanded ? (
-                              <>
-                                Hide Sizes <ChevronUp className="w-4 h-4" />
-                              </>
-                            ) : (
-                              <>
-                                View Sizes <ChevronDown className="w-4 h-4" />
-                              </>
-                            )}
+                            {expandedId === v.id ? "Hide Sizes" : "View Sizes"}
                           </Button>
-                        </TableCell>
-                        <TableCell className="text-center">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-8 px-3"
                             onClick={() => setEditVariant(v)}
+                            className="text-xs px-2 py-1 h-auto"
                           >
                             Edit
                           </Button>
-                        </TableCell>
-                      </TableRow>
+                        </div>
 
-                      {isExpanded && (
-                        <TableRow className="bg-gray-50">
-                          <TableCell colSpan={6} className="p-4">
+                        {/* Expanded Sizes View for Mobile */}
+                        {expandedId === v.id && (
+                          <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                             {v.sizeOptions?.length > 0 ? (
-                              <div className="overflow-x-auto">
-                                <table className="min-w-full text-xs border">
-                                  <thead className="bg-gray-200 text-gray-600">
-                                    <tr>
-                                      <th className="px-3 py-2 border">Size</th>
-                                      <th className="px-3 py-2 border">Price</th>
-                                      <th className="px-3 py-2 border">Stock</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {v.sizeOptions.map((opt, idx) => (
-                                      <tr key={idx}>
-                                        <td className="px-3 py-2 border">{opt.size}</td>
-                                        <td className="px-3 py-2 border">₹{opt.price}</td>
-                                        <td className="px-3 py-2 border">{opt.stock}</td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
+                              <div className="space-y-2">
+                                <h4 className="text-sm font-medium text-gray-700">Size Options:</h4>
+                                {v.sizeOptions.map((opt, idx) => (
+                                  <div key={idx} className="flex justify-between text-xs text-gray-600">
+                                    <span>Size: {opt.size}</span>
+                                    <span>Price: ₹{opt.price}</span>
+                                    <span>Stock: {opt.stock}</span>
+                                  </div>
+                                ))}
                               </div>
                             ) : (
-                              <p className="text-sm italic text-muted-foreground">
-                                No size options available.
-                              </p>
+                              <p className="text-xs text-gray-500">No size options available.</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Desktop View - Table Layout */}
+            <div className="hidden sm:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Image</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Product</TableHead>
+                    <TableHead>Best Selling</TableHead>
+                    <TableHead>Sizes</TableHead>
+                    <TableHead className="text-center">Action</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {paginatedVariants.map((v, i) => {
+                    const productTitle =
+                      products.find((p) => p.id === v.product_id)?.title || "-";
+                    const isExpanded = expandedId === v.id;
+
+                    return (
+                      <>
+                        <TableRow key={v.id} className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                          <TableCell>
+                            <img
+                              src={v.images?.[0]}
+                              alt="Variant"
+                              className="h-12 w-12 rounded border object-cover"
+                            />
+                          </TableCell>
+                          <TableCell>{v.name}</TableCell>
+                          <TableCell>{productTitle}</TableCell>
+                          <TableCell>
+                            {v.is_best_selling ? (
+                              <Badge className="bg-green-100 text-green-800">Yes</Badge>
+                            ) : (
+                              <Badge variant="secondary">No</Badge>
                             )}
                           </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-sm px-0 flex items-center gap-1"
+                              onClick={() => setExpandedId(isExpanded ? null : v.id)}
+                            >
+                              {isExpanded ? (
+                                <>
+                                  Hide Sizes <ChevronUp className="w-4 h-4" />
+                                </>
+                              ) : (
+                                <>
+                                  View Sizes <ChevronDown className="w-4 h-4" />
+                                </>
+                              )}
+                            </Button>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 px-3"
+                              onClick={() => setEditVariant(v)}
+                            >
+                              Edit
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      )}
-                    </>
-                  );
-                })}
-              </TableBody>
-            </Table>
 
-            <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
+                        {isExpanded && (
+                          <TableRow className="bg-gray-50">
+                            <TableCell colSpan={6} className="p-4">
+                              {v.sizeOptions?.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full text-xs border">
+                                    <thead className="bg-gray-200 text-gray-600">
+                                      <tr>
+                                        <th className="px-3 py-2 border">Size</th>
+                                        <th className="px-3 py-2 border">Price</th>
+                                        <th className="px-3 py-2 border">Stock</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {v.sizeOptions.map((opt, idx) => (
+                                        <tr key={idx}>
+                                          <td className="px-3 py-2 border">{opt.size}</td>
+                                          <td className="px-3 py-2 border">₹{opt.price}</td>
+                                          <td className="px-3 py-2 border">{opt.stock}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <p className="text-sm italic text-muted-foreground">
+                                  No size options available.
+                                </p>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-3 border-t bg-gray-50 space-y-3 sm:space-y-0">
               <span className="text-sm text-muted-foreground">
                 Page {page} of {totalPages}
               </span>
-              <div className="space-x-2">
+              <div className="flex space-x-2">
                 <Button
                   variant="outline"
                   size="sm"

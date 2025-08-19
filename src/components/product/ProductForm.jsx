@@ -75,13 +75,14 @@ export default function ProductForm({ onProductCreated }) {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 lg:space-y-6">
       {/* Add Category Button - Outside the form */}
       <div className="flex justify-end">
         <Button
           type="button"
           variant="outline"
           onClick={() => setCategoryModalOpen(true)}
+          className="w-full sm:w-auto"
         >
           + Add Category
         </Button>
@@ -91,17 +92,18 @@ export default function ProductForm({ onProductCreated }) {
       <form
         id="add-product-form"
         onSubmit={handleSubmit(onSubmit)}
-        className="p-6 bg-white shadow-md rounded-md space-y-4"
+        className="p-4 lg:p-6 bg-white shadow-md rounded-md space-y-4 lg:space-y-6"
         noValidate
       >
-        <h2 className="text-xl font-semibold">Add Product</h2>
+        <h2 className="text-lg lg:text-xl font-semibold">Add Product</h2>
 
         {/* Product Name */}
-        <div>
+        <div className="space-y-2">
           <label className="block text-sm font-medium mb-1">Product Name</label>
           <input
             {...register("name")}
-            className="w-full border px-3 py-2 rounded-md"
+            className="w-full border px-3 py-2 lg:py-2 rounded-md text-sm lg:text-base"
+            placeholder="Enter product name"
           />
           {errors.name && (
             <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
@@ -109,11 +111,13 @@ export default function ProductForm({ onProductCreated }) {
         </div>
 
         {/* Description */}
-        <div>
+        <div className="space-y-2">
           <label className="block text-sm font-medium mb-1">Description</label>
           <textarea
             {...register("description")}
-            className="w-full border px-3 py-2 rounded-md"
+            className="w-full border px-3 py-2 lg:py-2 rounded-md text-sm lg:text-base resize-none"
+            rows={3}
+            placeholder="Enter product description"
           />
           {errors.description && (
             <p className="text-red-500 text-sm mt-1">
@@ -123,7 +127,7 @@ export default function ProductForm({ onProductCreated }) {
         </div>
 
         {/* Category Selection */}
-        <div>
+        <div className="space-y-2">
           <label className="block text-sm font-medium mb-1">Category</label>
           {errors.category_id && (
             <p className="text-red-500 text-sm mt-1">
@@ -131,7 +135,7 @@ export default function ProductForm({ onProductCreated }) {
             </p>
           )}
           {loadingCategories ? (
-            <p>Loading categories...</p>
+            <p className="text-sm text-gray-500">Loading categories...</p>
           ) : (
             <div className="w-full">
               <Select
@@ -157,7 +161,7 @@ export default function ProductForm({ onProductCreated }) {
         </div>
 
         {/* Main Image */}
-        <div>
+        <div className="space-y-2">
           <label className="block text-sm font-medium mb-1">Main Image</label>
           <input
             type="file"
@@ -166,7 +170,7 @@ export default function ProductForm({ onProductCreated }) {
             onChange={(e) =>
               setImagePreview(URL.createObjectURL(e.target.files[0]))
             }
-            className="block"
+            className="block w-full text-sm lg:text-base"
           />
           {errors.main_image && (
             <p className="text-red-500 text-sm mt-1">
@@ -174,18 +178,20 @@ export default function ProductForm({ onProductCreated }) {
             </p>
           )}
           {imagePreview && (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="mt-2 w-32 h-32 object-cover rounded-md border"
-            />
+            <div className="flex justify-center lg:justify-start">
+              <img
+                src={imagePreview}
+                alt="Preview"
+                className="mt-2 w-24 h-24 lg:w-32 lg:h-32 object-cover rounded-md border"
+              />
+            </div>
           )}
         </div>
 
         <Button
           type="submit"
           disabled={addingProduct}
-          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+          className="w-full lg:w-auto px-4 py-2 lg:py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 text-sm lg:text-base"
         >
           {addingProduct ? "Creating..." : "Create Product"}
         </Button>

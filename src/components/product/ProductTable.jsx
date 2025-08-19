@@ -90,7 +90,7 @@ export default function ProductTable({ onViewVariants }) {
       <div className="pb-4 space-y-4">
         {/* Search and Filter Row */}
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-          <div className="flex-1 max-w-md">
+          <div className="flex-1 w-full sm:max-w-md">
             <SearchInput
               placeholder="Search products by name, description, or category..."
               value={searchQuery}
@@ -98,7 +98,7 @@ export default function ProductTable({ onViewVariants }) {
             />
           </div>
           <Select value={categoryId} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-60">
+            <SelectTrigger className="w-full sm:w-60">
               <SelectValue placeholder="Filter by category" />
             </SelectTrigger>
             <SelectContent>
@@ -119,90 +119,168 @@ export default function ProductTable({ onViewVariants }) {
         </div>
       </div>
       <div className="border rounded-2xl shadow-sm overflow-hidden">
-
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-center">Image</TableHead>
-              <TableHead className="text-left">Title</TableHead>
-              <TableHead className="text-left max-w-[250px]">Description</TableHead>
-              <TableHead className="text-left">Category</TableHead>
-              <TableHead className="text-center">Status</TableHead>
-              <TableHead className="text-center">Variants</TableHead>
-              <TableHead className="text-center">Add Variant</TableHead>
-              <TableHead className="text-center">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredProducts.map((prod, i) => (
-              <TableRow
-                key={prod.id}
-                className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-              >
-                <TableCell className="text-center">
-                  <img
-                    src={prod.imageUrl}
-                    className="h-12 w-12 mx-auto rounded object-cover border"
-                    alt="Product"
-                  />
-                </TableCell>
-                <TableCell className="align-middle">{prod.title}</TableCell>
-                <TableCell className="max-w-[250px] truncate align-middle">
-                  {truncateText(prod.description)}
-                </TableCell>
-                <TableCell className="align-middle">
-                  {categories.find((c) => c.id === prod.categoryId)?.name || "Unknown"}
-                </TableCell>
-                <TableCell className="text-center align-middle">
-                  <Badge
-                    className={
-                      prod.status === "ACTIVE"
-                        ? "bg-green-100 text-green-800"
-                        : prod.status === "INACTIVE"
-                          ? "bg-gray-100 text-gray-800"
-                          : "bg-yellow-100 text-yellow-800"
-                    }
-                  >
-                    {prod.status}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-center align-middle">
-                  <Button variant="link" onClick={() => onViewVariants(prod.id)}>
-                    View
-                  </Button>
-                </TableCell>
-                <TableCell className="text-center align-middle">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(`/add-variant/${prod.id}`)}
-                  >
-                    Add
-                  </Button>
-                </TableCell>
-                <TableCell className="text-center align-middle">
-                  <div className="flex justify-center items-center gap-2">
+        {/* Mobile View - Card Layout */}
+        <div className="block sm:hidden">
+          {filteredProducts.map((prod, i) => (
+            <div
+              key={prod.id}
+              className={`p-4 border-b last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                }`}
+            >
+              <div className="flex items-start space-x-3">
+                <img
+                  src={prod.imageUrl}
+                  className="h-16 w-16 rounded object-cover border flex-shrink-0"
+                  alt="Product"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-gray-900 truncate">{prod.title}</h3>
+                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                    {truncateText(prod.description, 60)}
+                  </p>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                      {categories.find((c) => c.id === prod.categoryId)?.name || "Unknown"}
+                    </span>
+                    <Badge
+                      className={
+                        prod.status === "ACTIVE"
+                          ? "bg-green-100 text-green-800 text-xs"
+                          : prod.status === "INACTIVE"
+                            ? "bg-gray-100 text-gray-800 text-xs"
+                            : "bg-yellow-100 text-yellow-800 text-xs"
+                      }
+                    >
+                      {prod.status}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-3">
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={() => onViewVariants(prod.id)}
+                      className="text-xs p-0 h-auto"
+                    >
+                      View Variants
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-8 px-3"
+                      onClick={() => navigate(`/add-variant/${prod.id}`)}
+                      className="text-xs px-2 py-1 h-auto"
+                    >
+                      Add Variant
+                    </Button>
+                  </div>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setEditProduct(prod)}
+                      className="text-xs px-2 py-1 h-auto"
                     >
                       Edit
                     </Button>
                     <Button
                       size="sm"
-                      className="h-8 px-3"
                       onClick={() => setDeleteProductId(prod.id)}
+                      className="text-xs px-2 py-1 h-auto"
                     >
                       Delete
                     </Button>
                   </div>
-                </TableCell>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop View - Table Layout */}
+        <div className="hidden sm:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">Image</TableHead>
+                <TableHead className="text-left">Title</TableHead>
+                <TableHead className="text-left max-w-[250px]">Description</TableHead>
+                <TableHead className="text-left">Category</TableHead>
+                <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-center">Variants</TableHead>
+                <TableHead className="text-center">Add Variant</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredProducts.map((prod, i) => (
+                <TableRow
+                  key={prod.id}
+                  className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                >
+                  <TableCell className="text-center">
+                    <img
+                      src={prod.imageUrl}
+                      className="h-12 w-12 mx-auto rounded object-cover border"
+                      alt="Product"
+                    />
+                  </TableCell>
+                  <TableCell className="align-middle">{prod.title}</TableCell>
+                  <TableCell className="max-w-[250px] truncate align-middle">
+                    {truncateText(prod.description)}
+                  </TableCell>
+                  <TableCell className="align-middle">
+                    {categories.find((c) => c.id === prod.categoryId)?.name || "Unknown"}
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    <Badge
+                      className={
+                        prod.status === "ACTIVE"
+                          ? "bg-green-100 text-green-800"
+                          : prod.status === "INACTIVE"
+                            ? "bg-gray-100 text-gray-800"
+                            : "bg-yellow-100 text-yellow-800"
+                      }
+                    >
+                      {prod.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    <Button variant="link" onClick={() => onViewVariants(prod.id)}>
+                      View
+                    </Button>
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate(`/add-variant/${prod.id}`)}
+                    >
+                      Add
+                    </Button>
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    <div className="flex justify-center items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-3"
+                        onClick={() => setEditProduct(prod)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="h-8 px-3"
+                        onClick={() => setDeleteProductId(prod.id)}
+                      >
+                        Delete
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Show message when no results found */}
         {filteredProducts.length === 0 && !loadingProducts && (
@@ -218,11 +296,11 @@ export default function ProductTable({ onViewVariants }) {
           </div>
         )}
 
-        <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
+        <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-3 border-t bg-gray-50 space-y-3 sm:space-y-0">
           <span className="text-sm text-gray-600">
             Page {currentPage} of {totalPages}
           </span>
-          <div className="space-x-2">
+          <div className="flex space-x-2">
             <Button
               variant="outline"
               size="sm"

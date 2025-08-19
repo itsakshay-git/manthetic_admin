@@ -82,9 +82,9 @@ export default function AddCategoryModal({ open, onClose, onCategoryAdded }) {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4">
-          <DialogTitle className="text-xl font-semibold text-gray-900">
+          <DialogTitle className="text-lg lg:text-xl font-semibold text-gray-900">
             Add New Category
           </DialogTitle>
         </DialogHeader>
@@ -92,45 +92,47 @@ export default function AddCategoryModal({ open, onClose, onCategoryAdded }) {
         <form
           id="add-category-form"
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-6"
+          className="space-y-4 lg:space-y-6"
           noValidate
         >
-          {/* Category Name */}
           <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="name" className="text-sm lg:text-base font-medium">
               Category Name *
             </Label>
             <Input
               id="name"
-              {...register("name")}
+              type="text"
               placeholder="Enter category name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              {...register("name")}
+              className="text-sm lg:text-base"
             />
             {errors.name && (
-              <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+              <p className="text-red-500 text-xs lg:text-sm mt-1">
+                {errors.name.message}
+              </p>
             )}
           </div>
 
-          {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="description" className="text-sm lg:text-base font-medium">
               Description
             </Label>
             <Textarea
               id="description"
-              {...register("description")}
               placeholder="Enter category description (optional)"
+              {...register("description")}
               rows={3}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors resize-none"
+              className="text-sm lg:text-base resize-none"
             />
             {errors.description && (
-              <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+              <p className="text-red-500 text-xs lg:text-sm mt-1">
+                {errors.description.message}
+              </p>
             )}
           </div>
 
-          {/* Image Upload */}
           <div className="space-y-2">
-            <Label htmlFor="image" className="text-sm font-medium text-gray-700">
+            <Label htmlFor="image" className="text-sm lg:text-base font-medium">
               Category Image *
             </Label>
             <div className="space-y-3">
@@ -138,38 +140,66 @@ export default function AddCategoryModal({ open, onClose, onCategoryAdded }) {
                 id="image"
                 type="file"
                 accept="image/*"
-                onChange={handleImageChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors file:mr-4 file:py-2 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                {...register("image")}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    setPreview(URL.createObjectURL(file));
+                  }
+                }}
+                className="text-sm lg:text-base"
               />
-              {errors.image && (
-                <p className="text-red-500 text-sm mt-1">{errors.image.message}</p>
-              )}
               {preview && (
-                <div className="mt-3">
-                  <img
-                    src={preview}
-                    alt="Preview"
-                    className="w-24 h-24 object-cover rounded-lg border border-gray-200 shadow-sm"
-                  />
+                <div className="flex justify-center lg:justify-start">
+                  <div className="relative w-24 h-24 lg:w-32 lg:h-32">
+                    <img
+                      src={preview}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-lg border"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setPreview(null)}
+                      className="absolute -top-2 -right-2 bg-white p-1 rounded-full shadow-lg hover:bg-gray-50"
+                    >
+                      <svg
+                        className="w-4 h-4 text-red-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
+            {errors.image && (
+              <p className="text-red-500 text-xs lg:text-sm mt-1">
+                {errors.image.message}
+              </p>
+            )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end space-x-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={handleClose}
-              className="px-6 py-2 border-gray-300 text-gray-700 hover:bg-gray-50"
+              className="w-full sm:w-auto text-sm lg:text-base"
             >
               Cancel
             </Button>
             <Button
               type="submit"
               disabled={isLoading}
-              className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full sm:w-auto text-sm lg:text-base"
             >
               {isLoading ? "Adding..." : "Add Category"}
             </Button>

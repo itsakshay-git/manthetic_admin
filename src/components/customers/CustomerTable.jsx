@@ -58,137 +58,145 @@ export default function CustomerTable({ customers = [], onDelete, isDeleting }) 
 
   return (
     <div className="space-y-4">
-      <div className="px-2 pt-2">
-        <Input
-          placeholder="Search by name, email or ID..."
-          value={searchQuery}
-          onChange={(e) => {
-            setSearchQuery(e.target.value);
-            setCurrentPage(1);
-          }}
-          className="max-w-sm"
-        />
+      <div className="pb-4 space-y-4">
+        {/* Search Input */}
+        <div className="w-full max-w-md">
+          <Input
+            placeholder="Search customers by name or email..."
+            value={searchQuery}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setCurrentPage(1);
+            }}
+            className="max-w-sm"
+          />
+        </div>
+
+        {/* Results Count */}
+        <div className="text-sm text-gray-600">
+          Showing {filteredCustomers.length} of {customers.length} customers
+          {searchQuery && ` matching "${searchQuery}"`}
+        </div>
       </div>
 
-      {/* Table */}
       <div className="border rounded-2xl shadow-sm overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="p-4">Customer ID</TableHead>
-              <TableHead className="p-4">Name</TableHead>
-              <TableHead className="p-4">Email</TableHead>
-              <TableHead className="p-4">Created At</TableHead>
-              <TableHead className="p-4 text-center">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedCustomers.map((cust, i) => (
-              <TableRow
-                key={cust.id}
-                className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-              >
-                <TableCell className="p-4 font-mono text-xs text-gray-700">
-                  #{cust.id}
-                </TableCell>
-                <TableCell className="p-4">{cust.name}</TableCell>
-                <TableCell className="p-4">{cust.email}</TableCell>
-                <TableCell className="p-4">
-                  <div className="group relative">
-                    <Badge className="bg-gray-100 text-gray-800 cursor-help">
-                      {formatDate(cust.createdAt, 'time')}
-                    </Badge>
-                    {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
-                      {formatDate(cust.createdAt, 'long')}
-                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+        {/* Mobile View - Card Layout */}
+        <div className="block sm:hidden">
+          {filteredCustomers.map((cust, i) => (
+            <div
+              key={cust.id}
+              className={`p-4 border-b last:border-b-0 ${i % 2 === 0 ? "bg-white" : "bg-gray-50"
+                }`}
+            >
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span className="text-blue-600 font-medium text-sm">
+                        {cust.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900">{cust.name}</h3>
+                      <p className="text-sm text-gray-500">{cust.email}</p>
                     </div>
                   </div>
-                </TableCell>
-                <TableCell className="p-4 text-center">
-                  <Dialog
-                    open={openDialogId === cust.id}
-                    onOpenChange={(open) =>
-                      setOpenDialogId(open ? cust.id : null)
-                    }
-                  >
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="hover:bg-black hover:text-white"
-                      >
-                        <Trash2 className="w-4 h-4 mr-1" />
-                        Delete
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="max-w-sm">
-                      <DialogHeader>
-                        <DialogTitle>
-                          Delete Customer #{cust.id}?
-                        </DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4">
-                        <p className="text-sm text-gray-600">
-                          Are you sure you want to delete this customer? This
-                          action cannot be undone.
-                        </p>
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => setOpenDialogId(null)}
-                          >
-                            Cancel
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            onClick={() => handleDelete(cust.id)}
-                            disabled={isDeleting}
-                          >
-                            Confirm Delete
-                          </Button>
-                        </div>
+                  <div className="text-right">
+                    <div className="group relative">
+                      <Badge className="bg-gray-100 text-gray-800 cursor-help">
+                        {formatDate(cust.createdAt, 'time')}
+                      </Badge>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full right-0 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        {formatDate(cust.createdAt, 'long')}
+                        <div className="absolute top-full right-0 mr-2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
                       </div>
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
-              </TableRow>
-            ))}
+                    </div>
+                  </div>
+                </div>
 
-            {paginatedCustomers.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-6 text-sm text-gray-500">
-                  No customers found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-
-        {/* Pagination Controls */}
-        <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
-          <span className="text-sm text-gray-600">
-            Page {currentPage} of {totalPages || 1}
-          </span>
-          <div className="space-x-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-              disabled={currentPage === totalPages || totalPages === 0}
-            >
-              Next
-            </Button>
-          </div>
+                <div className="flex items-center justify-between text-xs text-gray-600">
+                  <span>ID: #{cust.id}</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDelete(cust.id)}
+                    disabled={isDeleting}
+                    className="text-xs px-2 py-1 h-auto"
+                  >
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
+
+        {/* Desktop View - Table Layout */}
+        <div className="hidden sm:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-center">ID</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Created At</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredCustomers.map((cust, i) => (
+                <TableRow
+                  key={cust.id}
+                  className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+                >
+                  <TableCell className="p-4 font-mono text-xs text-gray-700">
+                    #{cust.id}
+                  </TableCell>
+                  <TableCell className="p-4">{cust.name}</TableCell>
+                  <TableCell className="p-4">{cust.email}</TableCell>
+                  <TableCell className="p-4">
+                    <div className="group relative">
+                      <Badge className="bg-gray-100 text-gray-800 cursor-help">
+                        {formatDate(cust.createdAt, 'time')}
+                      </Badge>
+                      {/* Tooltip */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                        {formatDate(cust.createdAt, 'long')}
+                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="p-4 text-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDelete(cust.id)}
+                      disabled={isDeleting}
+                      className="h-8 px-3"
+                    >
+                      {isDeleting ? "Deleting..." : "Delete"}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Show message when no results found */}
+        {filteredCustomers.length === 0 && (
+          <div className="p-8 text-center text-gray-500">
+            {searchQuery ? (
+              <div>
+                <p className="text-lg font-medium mb-2">No customers found</p>
+                <p className="text-sm">Try adjusting your search terms</p>
+              </div>
+            ) : (
+              <p className="text-lg">No customers available</p>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
