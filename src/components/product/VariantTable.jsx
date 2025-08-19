@@ -150,7 +150,7 @@ export default function VariantTable({ preselectedProductId }) {
             <div className="block sm:hidden">
               {paginatedVariants.map((v, i) => {
                 const productTitle =
-                  products.find((p) => p.id === v.product_id)?.title || "-";
+                  products.find((p) => p.id === v.productId)?.title || "-";
 
                 return (
                   <div
