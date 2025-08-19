@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useGetAllProducts } from "@/hooks/product/useProduct";
 import { useGetAllCategories } from "@/hooks/category/useCategory";
 import {
@@ -24,12 +24,14 @@ import { Dialog, DialogContent, DialogHeader, DialogFooter } from "@/components/
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import SearchInput from "@/components/shared/SearchInput";
 
 export default function ProductTable({ onViewVariants }) {
   const [categoryId, setCategoryId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [editProduct, setEditProduct] = useState(null);
   const [deleteProductId, setDeleteProductId] = useState(null);
-  
+
   const { mutate: deleteProduct, isPending: deleting } = useDeleteProduct();
   const { data: categories = [], isLoading: loadingCategories } = useGetAllCategories();
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,188 +39,241 @@ export default function ProductTable({ onViewVariants }) {
 
   const navigate = useNavigate()
 
-  
-const {
-  data,
-  isLoading: loadingProducts,
-} = useGetAllProducts({ page: currentPage, limit: 10, category: categoryId });
 
-const products = data?.products || [];
-const totalPages = data?.totalPages || 1;
+  const {
+    data,
+    isLoading: loadingProducts,
+  } = useGetAllProducts({ page: currentPage, limit: 10, category: categoryId });
+
+  const products = data?.products || [];
+  const totalPages = data?.totalPages || 1;
+
+  // Filter products based on search query
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
+
+    const query = searchQuery.toLowerCase().trim();
+    return products.filter(product =>
+      product.title?.toLowerCase().includes(query) ||
+      product.description?.toLowerCase().includes(query) ||
+      categories.find(c => c.id === product.category_id)?.name?.toLowerCase().includes(query)
+    );
+  }, [products, searchQuery, categories]);
 
   const handleDelete = async (id) => {
-  try {
-    await deleteProduct(id);
-    toast.success("Product and its variants deleted successfully");
-    setDeleteProductId(null);
-  } catch (err) {
-    console.error(err);
-    toast.error("Failed to delete product");
-  }
-};
+    try {
+      await deleteProduct(id);
+      toast.success("Product and its variants deleted successfully");
+      setDeleteProductId(null);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to delete product");
+    }
+  };
 
-return (
-  <div>
-      <div className="pb-4 flex justify-between items-center">
-        <Select value={categoryId} onValueChange={(val) => {
-          setCategoryId(val);
-          setCurrentPage(1); // reset to first page on filter
-        }}>
-          <SelectTrigger className="w-60">
-            <SelectValue placeholder="Filter by category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={String(cat.id)}>
-                {cat.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+  // Reset to first page when search or filter changes
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    setCurrentPage(1);
+  };
+
+  const handleCategoryChange = (val) => {
+    setCategoryId(val);
+    setCurrentPage(1);
+    setSearchQuery(""); // Clear search when category changes
+  };
+
+  console.log(filteredProducts)
+
+  return (
+    <div>
+      <div className="pb-4 space-y-4">
+        {/* Search and Filter Row */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+          <div className="flex-1 max-w-md">
+            <SearchInput
+              placeholder="Search products by name, description, or category..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
+          <Select value={categoryId} onValueChange={handleCategoryChange}>
+            <SelectTrigger className="w-60">
+              <SelectValue placeholder="Filter by category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={String(cat.id)}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Results Count */}
+        <div className="text-sm text-gray-600">
+          Showing {filteredProducts.length} of {products.length} products
+          {searchQuery && ` matching "${searchQuery}"`}
+        </div>
       </div>
-    <div className="border rounded-2xl shadow-sm overflow-hidden">
+      <div className="border rounded-2xl shadow-sm overflow-hidden">
 
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-center">Image</TableHead>
-            <TableHead className="text-left">Title</TableHead>
-            <TableHead className="text-left max-w-[250px]">Description</TableHead>
-            <TableHead className="text-left">Category</TableHead>
-            <TableHead className="text-center">Status</TableHead>
-            <TableHead className="text-center">Variants</TableHead>
-            <TableHead className="text-center">Add Variant</TableHead>
-            <TableHead className="text-center">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {products.map((prod, i) => (
-            <TableRow
-              key={prod.id}
-              className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
-            >
-              <TableCell className="text-center">
-                <img
-                  src={prod.imageurl}
-                  className="h-12 w-12 mx-auto rounded object-cover border"
-                  alt="Product"
-                />
-              </TableCell>
-              <TableCell className="align-middle">{prod.title}</TableCell>
-              <TableCell className="max-w-[250px] truncate align-middle">
-                {truncateText(prod.description)}
-              </TableCell>
-              <TableCell className="align-middle">
-                {categories.find((c) => c.id === prod.category_id)?.name || "Unknown"}
-              </TableCell>
-              <TableCell className="text-center align-middle">
-                <Badge
-                  className={
-                    prod.status === "ACTIVE"
-                      ? "bg-green-100 text-green-800"
-                      : prod.status === "INACTIVE"
-                      ? "bg-gray-100 text-gray-800"
-                      : "bg-yellow-100 text-yellow-800"
-                  }
-                >
-                  {prod.status}
-                </Badge>
-              </TableCell>
-              <TableCell className="text-center align-middle">
-                <Button variant="link" onClick={() => onViewVariants(prod.id)}>
-                  View
-                </Button>
-              </TableCell>
-              <TableCell className="text-center align-middle">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(`/add-variant/${prod.id}`)}
-                >
-                  Add
-                </Button>
-              </TableCell>
-              <TableCell className="text-center align-middle">
-                <div className="flex justify-center items-center gap-2">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="text-center">Image</TableHead>
+              <TableHead className="text-left">Title</TableHead>
+              <TableHead className="text-left max-w-[250px]">Description</TableHead>
+              <TableHead className="text-left">Category</TableHead>
+              <TableHead className="text-center">Status</TableHead>
+              <TableHead className="text-center">Variants</TableHead>
+              <TableHead className="text-center">Add Variant</TableHead>
+              <TableHead className="text-center">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredProducts.map((prod, i) => (
+              <TableRow
+                key={prod.id}
+                className={i % 2 === 0 ? "bg-white" : "bg-gray-50"}
+              >
+                <TableCell className="text-center">
+                  <img
+                    src={prod.imageUrl}
+                    className="h-12 w-12 mx-auto rounded object-cover border"
+                    alt="Product"
+                  />
+                </TableCell>
+                <TableCell className="align-middle">{prod.title}</TableCell>
+                <TableCell className="max-w-[250px] truncate align-middle">
+                  {truncateText(prod.description)}
+                </TableCell>
+                <TableCell className="align-middle">
+                  {categories.find((c) => c.id === prod.categoryId)?.name || "Unknown"}
+                </TableCell>
+                <TableCell className="text-center align-middle">
+                  <Badge
+                    className={
+                      prod.status === "ACTIVE"
+                        ? "bg-green-100 text-green-800"
+                        : prod.status === "INACTIVE"
+                          ? "bg-gray-100 text-gray-800"
+                          : "bg-yellow-100 text-yellow-800"
+                    }
+                  >
+                    {prod.status}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-center align-middle">
+                  <Button variant="link" onClick={() => onViewVariants(prod.id)}>
+                    View
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center align-middle">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-3"
-                    onClick={() => setEditProduct(prod)}
+                    onClick={() => navigate(`/add-variant/${prod.id}`)}
                   >
-                    Edit
+                    Add
                   </Button>
-                  <Button
-                    size="sm"
-                    className="h-8 px-3"
-                    onClick={() => setDeleteProductId(prod.id)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                </TableCell>
+                <TableCell className="text-center align-middle">
+                  <div className="flex justify-center items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3"
+                      onClick={() => setEditProduct(prod)}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-8 px-3"
+                      onClick={() => setDeleteProductId(prod.id)}
+                    >
+                      Delete
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
 
-    <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
-      <span className="text-sm text-gray-600">
-        Page {currentPage} of {totalPages}
-      </span>
-      <div className="space-x-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-          disabled={currentPage === totalPages}
-        >
-          Next
-        </Button>
-      </div>
-    </div>
+        {/* Show message when no results found */}
+        {filteredProducts.length === 0 && !loadingProducts && (
+          <div className="p-8 text-center text-gray-500">
+            {searchQuery ? (
+              <div>
+                <p className="text-lg font-medium mb-2">No products found</p>
+                <p className="text-sm">Try adjusting your search terms or category filter</p>
+              </div>
+            ) : (
+              <p className="text-lg">No products available</p>
+            )}
+          </div>
+        )}
 
-
-      {editProduct && (
-        <EditProductModal
-          product={editProduct}
-          onClose={() => setEditProduct(null)}
-          open={!!editProduct}
-        />
-      )}
-      <Dialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <h2 className="text-lg font-semibold">Confirm Deletion</h2>
-          </DialogHeader>
-          <p>
-            Are you sure you want to delete this product? This will also delete all its
-            variants.
-          </p>
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setDeleteProductId(null)}>
-              Cancel
+        <div className="flex justify-between items-center px-4 py-3 border-t bg-gray-50">
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <div className="space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+            >
+              Previous
             </Button>
             <Button
-              variant="destructive"
-              onClick={() => handleDelete(deleteProductId)}
-              disabled={deleting}
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
             >
-              {deleting ? "Deleting..." : "Delete"}
+              Next
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </div>
+        </div>
+
+
+        {editProduct && (
+          <EditProductModal
+            product={editProduct}
+            onClose={() => setEditProduct(null)}
+            open={!!editProduct}
+          />
+        )}
+        <Dialog open={!!deleteProductId} onOpenChange={() => setDeleteProductId(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <h2 className="text-lg font-semibold">Confirm Deletion</h2>
+            </DialogHeader>
+            <p>
+              Are you sure you want to delete this product? This will also delete all its
+              variants.
+            </p>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setDeleteProductId(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(deleteProductId)}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
-  </div>
-);
+  );
 }

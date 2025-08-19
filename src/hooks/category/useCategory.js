@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "@/lib/axios";
-import { toast } from "sonner";
 
 export const useGetAllCategories = () => {
   return useQuery({
@@ -17,15 +16,20 @@ export const useAddCategory = () => {
 
   return useMutation({
     mutationFn: async (formData) => {
-      const res = await axios.post("/categories/admin/categories", formData);
+      const res = await axios.post("/categories/admin/categories", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       return res.data;
     },
     onSuccess: (newCategory) => {
-      toast.success("Category added");
+      // Invalidate and refetch categories
       queryClient.invalidateQueries(["categories"]);
     },
-    onError: () => {
-      toast.error("Failed to add category");
+    onError: (error) => {
+      const errorMessage = error?.response?.data?.message || "Failed to add category";
+      console.error("Category creation error:", errorMessage);
     },
   });
 };

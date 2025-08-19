@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import SearchInput from "@/components/shared/SearchInput";
 
 export default function VariantTable({ preselectedProductId }) {
   const [productId, setProductId] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [editVariant, setEditVariant] = useState(null);
   const [expandedId, setExpandedId] = useState(null);
   const [page, setPage] = useState(1);
@@ -51,32 +53,77 @@ export default function VariantTable({ preselectedProductId }) {
   useEffect(() => {
     setPage(1);
     setProductId(preselectedProductId || "all");
+    setSearchQuery(""); // Clear search when product changes
   }, [preselectedProductId]);
+
+  // Filter variants based on search query
+  const filteredVariants = useMemo(() => {
+    if (!searchQuery.trim()) return allVariants;
+
+    const query = searchQuery.toLowerCase().trim();
+    return allVariants.filter(variant => {
+      const variantName = variant.name?.toLowerCase() || "";
+      const productTitle = products.find(p => p.id === variant.product_id)?.title?.toLowerCase() || "";
+
+      return variantName.includes(query) || productTitle.includes(query);
+    });
+  }, [allVariants, searchQuery, products]);
 
   const paginatedVariants = useMemo(() => {
     const start = (page - 1) * limit;
     const end = start + limit;
-    return allVariants?.slice(start, end);
-  }, [allVariants, page]);
+    return filteredVariants?.slice(start, end);
+  }, [filteredVariants, page]);
 
-  const totalPages = Math.ceil((allVariants?.length || 0) / limit);
+
+
+  const totalPages = Math.ceil((filteredVariants?.length || 0) / limit);
+
+  // Reset to first page when search changes
+  const handleSearchChange = (value) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  // Reset to first page when product filter changes
+  const handleProductChange = (value) => {
+    setProductId(value);
+    setPage(1);
+    setSearchQuery(""); // Clear search when product changes
+  };
 
   return (
     <div>
-      <div className="pb-4 flex justify-between items-center">
-        <Select value={productId} onValueChange={setProductId}>
-          <SelectTrigger className="w-60">
-            <SelectValue placeholder="Filter by product" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Products</SelectItem>
-            {products.map((p) => (
-              <SelectItem key={p.id} value={p.id}>
-                {p.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      <div className="pb-4 space-y-4">
+        {/* Search and Filter Row */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
+          <div className="flex-1 max-w-md">
+            <SearchInput
+              placeholder="Search variants by name or product..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+            />
+          </div>
+          <Select value={productId} onValueChange={handleProductChange}>
+            <SelectTrigger className="w-60">
+              <SelectValue placeholder="Filter by product" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Products</SelectItem>
+              {products.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Results Count */}
+        <div className="text-sm text-gray-600">
+          Showing {filteredVariants.length} of {allVariants.length} variants
+          {searchQuery && ` matching "${searchQuery}"`}
+        </div>
       </div>
 
       <div className="border rounded-2xl shadow-sm overflow-hidden">
@@ -84,8 +131,17 @@ export default function VariantTable({ preselectedProductId }) {
           <div className="p-4 text-muted-foreground">Loading variants...</div>
         ) : isError ? (
           <div className="p-4 text-red-500">Failed to load variants</div>
-        ) : allVariants.length === 0 ? (
-          <div className="p-4 text-muted-foreground">No variants found</div>
+        ) : filteredVariants.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            {searchQuery ? (
+              <div>
+                <p className="text-lg font-medium mb-2">No variants found</p>
+                <p className="text-sm">Try adjusting your search terms or product filter</p>
+              </div>
+            ) : (
+              <p className="text-lg">No variants available</p>
+            )}
+          </div>
         ) : (
           <>
             <Table>
@@ -102,7 +158,7 @@ export default function VariantTable({ preselectedProductId }) {
               <TableBody>
                 {paginatedVariants.map((v, i) => {
                   const productTitle =
-                    products.find((p) => p.id === v.product_id)?.title || "-";
+                    products.find((p) => p.id === v.productId)?.title || "-";
                   const isExpanded = expandedId === v.id;
 
                   return (
@@ -118,7 +174,7 @@ export default function VariantTable({ preselectedProductId }) {
                         <TableCell>{v.name}</TableCell>
                         <TableCell>{productTitle}</TableCell>
                         <TableCell>
-                          {v.is_best_selling ? (
+                          {v.isBestSelling ? (
                             <Badge className="bg-green-100 text-green-800">Yes</Badge>
                           ) : (
                             <Badge variant="secondary">No</Badge>
@@ -157,7 +213,7 @@ export default function VariantTable({ preselectedProductId }) {
                       {isExpanded && (
                         <TableRow className="bg-gray-50">
                           <TableCell colSpan={6} className="p-4">
-                            {v.size_options?.length > 0 ? (
+                            {v.sizeOptions?.length > 0 ? (
                               <div className="overflow-x-auto">
                                 <table className="min-w-full text-xs border">
                                   <thead className="bg-gray-200 text-gray-600">
@@ -168,7 +224,7 @@ export default function VariantTable({ preselectedProductId }) {
                                     </tr>
                                   </thead>
                                   <tbody>
-                                    {v.size_options.map((opt, idx) => (
+                                    {v.sizeOptions.map((opt, idx) => (
                                       <tr key={idx}>
                                         <td className="px-3 py-2 border">{opt.size}</td>
                                         <td className="px-3 py-2 border">₹{opt.price}</td>

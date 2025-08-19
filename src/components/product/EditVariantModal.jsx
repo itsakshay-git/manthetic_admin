@@ -28,11 +28,13 @@ const EditVariantModal = ({ open, onClose, variant }) => {
   const { mutateAsync: updateVariant } = useUpdateVariant();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log(variant);
+
   useEffect(() => {
     if (variant) {
       setFormData({
-        size_options: variant.size_options || [{ size: '', stock: '', price: '' }],
-        is_best_selling: variant.is_best_selling || false,
+        size_options: variant.sizeOptions || [{ size: '', stock: '', price: '' }],
+        is_best_selling: variant.isBestSelling || false,
         name: variant.name || '',
         description: variant.description || '',
         images: [],

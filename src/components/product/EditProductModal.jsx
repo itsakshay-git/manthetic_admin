@@ -22,6 +22,7 @@ const EditProductModal = ({ open, onClose, product }) => {
     imageurl: '',
   });
 
+  console.log(product)
   const { mutate: updateProduct, isPending: isLoading } = useUpdateProduct();
   const { data: categories = [] } = useGetAllCategories();
 
@@ -32,7 +33,7 @@ const EditProductModal = ({ open, onClose, product }) => {
         description: product.description || '',
         category_id: product.category_id || '',
         image: null,
-        imageurl: product.imageurl || '',
+        imageurl: product.imageUrl || '',
       });
     }
   }, [product]);

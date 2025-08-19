@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "react-hot-toast";
 import { useDeleteReview } from "@/hooks/reviews/useReview";
+import { formatDate } from "@/lib/utils";
 
 export default function ReviewTable({ reviews = [] }) {
   const { mutate: deleteReview, isLoading: isDeleting } = useDeleteReview();
@@ -95,9 +96,16 @@ export default function ReviewTable({ reviews = [] }) {
                 <TableCell className="p-4">{review.rating}</TableCell>
                 <TableCell className="p-4">{review.comment}</TableCell>
                 <TableCell className="p-4">
-                  <Badge className="bg-gray-100 text-gray-800">
-                    {new Date(review.created_at).toLocaleDateString()}
-                  </Badge>
+                  <div className="group relative">
+                    <Badge className="bg-gray-100 text-gray-800 cursor-help">
+                      {formatDate(review.createdAt, 'time')}
+                    </Badge>
+                    {/* Tooltip */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
+                      {formatDate(review.createdAt, 'long')}
+                      <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
+                    </div>
+                  </div>
                 </TableCell>
                 <TableCell className="p-4 text-center">
                   <Dialog
