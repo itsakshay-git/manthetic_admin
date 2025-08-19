@@ -96,27 +96,29 @@ export default function VariantTable({ preselectedProductId }) {
     <div>
       <div className="pb-4 space-y-4">
         {/* Search and Filter Row */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-          <div className="flex-1 w-full sm:max-w-md">
+        <div className="flex flex-col gap-4">
+          <div className="w-full">
             <SearchInput
               placeholder="Search variants by name or product..."
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </div>
-          <Select value={productId} onValueChange={handleProductChange}>
-            <SelectTrigger className="w-full sm:w-60">
-              <SelectValue placeholder="Filter by product" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Products</SelectItem>
-              {products.map((p) => (
-                <SelectItem key={p.id} value={p.id}>
-                  {p.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="w-full">
+            <Select value={productId} onValueChange={handleProductChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by product" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Products</SelectItem>
+                {products.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Results Count */}
@@ -163,20 +165,20 @@ export default function VariantTable({ preselectedProductId }) {
                         className="h-16 w-16 rounded border object-cover flex-shrink-0"
                       />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 truncate">{v.name}</h3>
-                        <p className="text-sm text-gray-500 mt-1">{productTitle}</p>
-                        <div className="flex items-center space-x-2 mt-2">
+                        <h3 className="font-medium text-gray-900 break-words">{v.name}</h3>
+                        <p className="text-sm text-gray-500 mt-1 break-words">{productTitle}</p>
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
                           {v.is_best_selling ? (
                             <Badge className="bg-green-100 text-green-800 text-xs">Best Seller</Badge>
                           ) : (
                             <Badge variant="secondary" className="text-xs">Regular</Badge>
                           )}
                         </div>
-                        <div className="flex items-center space-x-2 mt-3">
+                        <div className="flex flex-wrap items-center gap-2 mt-3">
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-xs p-0 h-auto"
+                            className="text-xs p-0 h-auto min-w-0"
                             onClick={() => setExpandedId(expandedId === v.id ? null : v.id)}
                           >
                             {expandedId === v.id ? "Hide Sizes" : "View Sizes"}
@@ -185,7 +187,7 @@ export default function VariantTable({ preselectedProductId }) {
                             variant="outline"
                             size="sm"
                             onClick={() => setEditVariant(v)}
-                            className="text-xs px-2 py-1 h-auto"
+                            className="text-xs px-2 py-1 h-auto min-w-0"
                           >
                             Edit
                           </Button>
@@ -197,13 +199,19 @@ export default function VariantTable({ preselectedProductId }) {
                             {v.sizeOptions?.length > 0 ? (
                               <div className="space-y-2">
                                 <h4 className="text-sm font-medium text-gray-700">Size Options:</h4>
-                                {v.sizeOptions.map((opt, idx) => (
-                                  <div key={idx} className="flex justify-between text-xs text-gray-600">
-                                    <span>Size: {opt.size}</span>
-                                    <span>Price: ₹{opt.price}</span>
-                                    <span>Stock: {opt.stock}</span>
-                                  </div>
-                                ))}
+                                <div className="space-y-2">
+                                  {v.sizeOptions.map((opt, idx) => (
+                                    <div key={idx} className="bg-white p-2 rounded border text-xs text-gray-600">
+                                      <div className="flex justify-between items-center">
+                                        <span className="font-medium">Size: {opt.size}</span>
+                                        <span className="text-blue-600">₹{opt.price}</span>
+                                      </div>
+                                      <div className="text-gray-500 mt-1">
+                                        Stock: {opt.stock}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
                             ) : (
                               <p className="text-xs text-gray-500">No size options available.</p>

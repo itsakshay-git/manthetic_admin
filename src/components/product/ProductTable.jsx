@@ -89,27 +89,29 @@ export default function ProductTable({ onViewVariants }) {
     <div>
       <div className="pb-4 space-y-4">
         {/* Search and Filter Row */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-          <div className="flex-1 w-full sm:max-w-md">
+        <div className="flex flex-col gap-4">
+          <div className="w-full">
             <SearchInput
               placeholder="Search products by name, description, or category..."
               value={searchQuery}
               onChange={handleSearchChange}
             />
           </div>
-          <Select value={categoryId} onValueChange={handleCategoryChange}>
-            <SelectTrigger className="w-full sm:w-60">
-              <SelectValue placeholder="Filter by category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.id} value={String(cat.id)}>
-                  {cat.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="w-full">
+            <Select value={categoryId} onValueChange={handleCategoryChange}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Filter by category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Categories</SelectItem>
+                {categories.map((cat) => (
+                  <SelectItem key={cat.id} value={String(cat.id)}>
+                    {cat.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
 
         {/* Results Count */}
@@ -134,12 +136,12 @@ export default function ProductTable({ onViewVariants }) {
                   alt="Product"
                 />
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 truncate">{prod.title}</h3>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-2">
+                  <h3 className="font-medium text-gray-900 break-words">{prod.title}</h3>
+                  <p className="text-sm text-gray-500 mt-1 break-words line-clamp-2">
                     {truncateText(prod.description, 60)}
                   </p>
-                  <div className="flex items-center space-x-2 mt-2">
-                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded break-words">
                       {categories.find((c) => c.id === prod.categoryId)?.name || "Unknown"}
                     </span>
                     <Badge
@@ -154,12 +156,12 @@ export default function ProductTable({ onViewVariants }) {
                       {prod.status}
                     </Badge>
                   </div>
-                  <div className="flex items-center space-x-2 mt-3">
+                  <div className="flex flex-wrap items-center gap-2 mt-3">
                     <Button
                       variant="link"
                       size="sm"
                       onClick={() => onViewVariants(prod.id)}
-                      className="text-xs p-0 h-auto"
+                      className="text-xs p-0 h-auto min-w-0"
                     >
                       View Variants
                     </Button>
@@ -167,24 +169,24 @@ export default function ProductTable({ onViewVariants }) {
                       variant="outline"
                       size="sm"
                       onClick={() => navigate(`/add-variant/${prod.id}`)}
-                      className="text-xs px-2 py-1 h-auto"
+                      className="text-xs px-2 py-1 h-auto min-w-0"
                     >
                       Add Variant
                     </Button>
                   </div>
-                  <div className="flex items-center space-x-2 mt-2">
+                  <div className="flex flex-wrap items-center gap-2 mt-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setEditProduct(prod)}
-                      className="text-xs px-2 py-1 h-auto"
+                      className="text-xs px-2 py-1 h-auto min-w-0"
                     >
                       Edit
                     </Button>
                     <Button
                       size="sm"
                       onClick={() => setDeleteProductId(prod.id)}
-                      className="text-xs px-2 py-1 h-auto"
+                      className="text-xs px-2 py-1 h-auto min-w-0"
                     >
                       Delete
                     </Button>
