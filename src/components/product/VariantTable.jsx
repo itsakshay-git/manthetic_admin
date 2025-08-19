@@ -241,7 +241,7 @@ export default function VariantTable({ preselectedProductId }) {
                 <TableBody>
                   {paginatedVariants.map((v, i) => {
                     const productTitle =
-                      products.find((p) => p.id === v.product_id)?.title || "-";
+                      products.find((p) => p.id === v.productId)?.title || "-";
                     const isExpanded = expandedId === v.id;
 
                     return (
